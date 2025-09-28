@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mail;
+using System.Text;
+using System.Threading.Tasks;
+using System.Net;
+
+
+namespace Negocio
+{
+    public class EmailService
+    {
+        private MailMessage email;
+        private SmtpClient server;
+
+        public EmailService()
+        {
+            email = new MailMessage();
+            server = new SmtpClient("smtp.gmail.com", 587);
+            server.Credentials = new NetworkCredential("e30050aabc0ab8", "566d7c8fbb01a8");
+            server.EnableSsl = true;
+            server.Port = 2525;
+            server.Host = "sandbox.smtp.mailtrap.io";
+        }
+
+        public void armarCorreo(string emailDestino, string asunto, string cuerpo)
+        {
+            email = new MailMessage();
+            email.From = new MailAddress("catalogo@maxiprograma.com");
+            email.To.Add(emailDestino);
+            email.Subject = asunto;
+            email.IsBodyHtml = true;
+            email.Body = cuerpo;
+        }
+
+        public void enviarEmail()
+        {
+            try
+            {
+                server.Send(email);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+    }
+}

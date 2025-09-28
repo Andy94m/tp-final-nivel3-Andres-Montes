@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 using Dominio;
 
 namespace Negocio
@@ -14,18 +15,97 @@ namespace Negocio
     public class ArticuloNegocio
     {
 
-        public List<Articulo> listar()
+        public List<Articulo> listar(string id = "")
         {
-
             List<Articulo> lista = new List<Articulo>();
-            AccesoDatos datos = new AccesoDatos();
+            SqlConnection conexion = new SqlConnection();
+            SqlCommand comando = new SqlCommand();
+            SqlDataReader lector;
+            //AccesoDatos datos = new AccesoDatos();
 
             try
             {
-                datos.setearConsulta("select A.Id, Codigo, Nombre, A.Descripcion, M.Descripcion DescMarca, C.Descripcion DescCategoria, ImagenUrl, A.IdMarca, A.IdCategoria, Precio from ARTICULOS A, MARCAS M, CATEGORIAS C where A.IdMarca = M.Id and  A.IdCategoria= C.ID and Nombre is not null and Codigo NOT LIKE '#%'");
+                conexion.ConnectionString = ConfigurationManager.AppSettings["cadenaConexion"];
+                comando.CommandType = System.Data.CommandType.Text;
+                comando.CommandText = "select A.Id, Codigo, Nombre, A.Descripcion, M.Descripcion DescMarca, C.Descripcion DescCategoria, ImagenUrl, A.IdMarca, A.IdCategoria, Precio from ARTICULOS A, MARCAS M, CATEGORIAS C where A.IdMarca = M.Id and  A.IdCategoria= C.ID and Nombre is not null and Codigo NOT LIKE '#%'";
+                //datos.setearConsulta("select A.Id, Codigo, Nombre, A.Descripcion, M.Descripcion DescMarca, C.Descripcion DescCategoria, ImagenUrl, A.IdMarca, A.IdCategoria, Precio from ARTICULOS A, MARCAS M, CATEGORIAS C where A.IdMarca = M.Id and  A.IdCategoria= C.ID and Nombre is not null and Codigo NOT LIKE '#%'");
+                //datos.ejecutarLectura();
+                //while (datos.Lector.Read())
+                //    lista.Add(auxFila(datos.Lector));
+
+                //return lista;
+
+                if (id != "")
+                    comando.CommandText += " and A.Id = " + id;
+
+                comando.Connection = conexion;
+
+                conexion.Open();
+                lector = comando.ExecuteReader();
+
+                while (lector.Read())
+                {
+                    Articulo aux = new Articulo();
+                    aux.Id = (int)lector["Id"];
+                    aux.Cod = (string)lector["Codigo"];
+                    aux.Descripcion = (string)lector["Descripcion"];
+                    aux.UrlImagen = (string)lector["ImagenUrl"];
+                    aux.Precio = (decimal)lector["Precio"];
+
+                    if (!(lector["ImagenUrl"] is DBNull))
+                        aux.UrlImagen = (string)lector["ImagenUrl"];
+
+                    aux.Compania = new Marcas();
+                    aux.Compania.Id = (int)lector["IdMarca"];
+                    aux.Compania.Descripcion = (string)lector["DescMarca"];
+
+                    aux.Tipo = new Categorias();
+                    aux.Tipo.Id = (int)lector["IdCategoria"];
+                    aux.Tipo.Descripcion = (string)lector["DescCategoria"];
+
+                    lista.Add(aux);
+                }
+                conexion.Close();
+                return lista;
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public List<Articulo> listarConSP()
+        {
+            List<Articulo> lista = new List<Articulo>();
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearProcedimiento("storedListar");
                 datos.ejecutarLectura();
+
                 while (datos.Lector.Read())
-                    lista.Add(auxFila(datos.Lector));
+                {
+                    Articulo aux = new Articulo();
+                    aux.Id = (int)datos.Lector["Id"];
+                    aux.Cod = (string)datos.Lector["Codigo"];
+                    aux.Descripcion = (string)datos.Lector["Descripcion"];
+                    aux.UrlImagen = (string)datos.Lector["ImagenUrl"];
+                    aux.Precio = (decimal)datos.Lector["Precio"];
+
+                    if (!(datos.Lector["ImagenUrl"] is DBNull))
+                        aux.UrlImagen = (string)datos.Lector["ImagenUrl"];
+
+                    aux.Compania = new Marcas();
+                    aux.Compania.Id = (int)datos.Lector["IdMarca"];
+                    aux.Compania.Descripcion = (string)datos.Lector["DescMarca"];
+
+                    aux.Tipo = new Categorias();
+                    aux.Tipo.Id = (int)datos.Lector["IdCategoria"];
+                    aux.Tipo.Descripcion = (string)datos.Lector["DescCategoria"];
+
+                    lista.Add(aux);
+                }
 
                 return lista;
             }
@@ -38,6 +118,7 @@ namespace Negocio
                 datos.cerrarConexion();
             }
         }
+
         private Articulo auxFila(SqlDataReader lector)
         {
             Articulo aux = new Articulo
@@ -89,53 +170,78 @@ namespace Negocio
             }
         }
 
-        public void agregar(Articulo nuevo)
+        public void agregar(Articulo artic)
         {
             AccesoDatos datos = new AccesoDatos();
 
             try
             {
                 datos.setearConsulta("insert into ARTICULOS (Codigo, Nombre, Descripcion, IdMarca, IdCategoria, ImagenUrl, Precio) values (@Codigo, @Nombre, @Descripcion, @IdMarca, @IdCategoria, @ImagenUrl, @Precio)");
-                datos.setearParametro("@Codigo", nuevo.Cod);
-                datos.setearParametro("@Nombre", nuevo.Nombre);
-                datos.setearParametro("@Descripcion", nuevo.Descripcion);
-                datos.setearParametro("@IdMarca", nuevo.Compania.Id);
-                datos.setearParametro("@IdCategoria", nuevo.Tipo.Id);
-                datos.setearParametro("@ImagenUrl", nuevo.UrlImagen);
-                datos.setearParametro("@Precio", nuevo.Precio);
+                datos.setearParametro("@Codigo", artic.Cod);
+                datos.setearParametro("@Nombre", artic.Nombre);
+                datos.setearParametro("@Descripcion", artic.Descripcion);
+                datos.setearParametro("@IdMarca", artic.Compania.Id);
+                datos.setearParametro("@IdCategoria", artic.Tipo.Id);
+                datos.setearParametro("@ImagenUrl", artic.UrlImagen);
+                datos.setearParametro("@Precio", artic.Precio);
 
                 datos.ejecutarAccion();
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
             finally
             {
                 datos.cerrarConexion();
-                Console.WriteLine($"Consulta generada: insert into DISCOS (Titulo, FechaLanzamiento, CantidadCanciones) values ('{nuevo.Nombre}', '{nuevo.Cod}', {nuevo.Descripcion})");
+                Console.WriteLine($"Consulta generada: insert into DISCOS (Titulo, FechaLanzamiento, CantidadCanciones) values ('{artic.Nombre}', '{artic.Cod}', {artic.Descripcion})");
             }
         }
 
-        public void modificar(Articulo nuevo)
+        public void agregarConSP(Articulo artic)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearProcedimiento("storedAltaArticulo");
+                datos.setearParametro("@Codigo", artic.Cod);
+                datos.setearParametro("@Nombre", artic.Nombre);
+                datos.setearParametro("@Descripcion", artic.Descripcion);
+                datos.setearParametro("@IdMarca", artic.Compania.Id);
+                datos.setearParametro("@IdCategoria", artic.Tipo.Id);
+                datos.setearParametro("@ImagenUrl", artic.UrlImagen);
+                datos.setearParametro("@Precio", artic.Precio);
+                datos.ejecutarAccion();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                datos.cerrarConexion();
+                //Console.WriteLine($"Consulta generada: insert into DISCOS (Titulo, FechaLanzamiento, CantidadCanciones) values ('{nuevo.Nombre}', '{nuevo.Cod}', {nuevo.Descripcion})");
+            }
+        }
+
+        public void modificar(Articulo artic)
         {
             AccesoDatos datos = new AccesoDatos();
             try
             {
                 datos.setearConsulta("update ARTICULOS set Codigo = @Codigo, Nombre = @Nombre, Descripcion = @Descripcion, IdMarca = @IdMarca, IdCategoria = @IdCategoria, ImagenUrl = @ImagenUrl, Precio = @Precio where Id = @Id");
-                datos.setearParametro("@Id", nuevo.Id);
-                datos.setearParametro("@Codigo", nuevo.Cod);
-                datos.setearParametro("@Nombre", nuevo.Nombre);
-                datos.setearParametro("@Descripcion", nuevo.Descripcion);
-                datos.setearParametro("@IdMarca", nuevo.Compania.Id);
-                datos.setearParametro("@IdCategoria", nuevo.Tipo.Id);
-                datos.setearParametro("@ImagenUrl", nuevo.UrlImagen);
-                datos.setearParametro("@Precio", nuevo.Precio);
+                datos.setearParametro("@Id", artic.Id);
+                datos.setearParametro("@Codigo", artic.Cod);
+                datos.setearParametro("@Nombre", artic.Nombre);
+                datos.setearParametro("@Descripcion", artic.Descripcion);
+                datos.setearParametro("@IdMarca", artic.Compania.Id);
+                datos.setearParametro("@IdCategoria", artic.Tipo.Id);
+                datos.setearParametro("@ImagenUrl", artic.UrlImagen);
+                datos.setearParametro("@Precio", artic.Precio);
 
                 datos.ejecutarAccion();
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -146,7 +252,33 @@ namespace Negocio
 
         }
 
-        public void eliminarFisico (int id)
+        public void modificarConSP(Articulo artic)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearProcedimiento("storedModificarArticulo");
+                datos.setearParametro("@Id", artic.Id);
+                datos.setearParametro("@Codigo", artic.Cod);
+                datos.setearParametro("@Nombre", artic.Nombre);
+                datos.setearParametro("@Descripcion", artic.Descripcion);
+                datos.setearParametro("@IdMarca", artic.Compania.Id);
+                datos.setearParametro("@IdCategoria", artic.Tipo.Id);
+                datos.setearParametro("@ImagenUrl", artic.UrlImagen);
+                datos.setearParametro("@Precio", artic.Precio);
+                datos.ejecutarAccion();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                datos.cerrarConexion();
+            }
+        }
+
+        public void eliminarFisico(int id)
         {
             try
             {
@@ -193,24 +325,23 @@ namespace Negocio
             }
         }
 
-        
 
-        public List<Articulo> filtrar (string columna, string criterio, string filtro)
+        public List<Articulo> filtrar(string columna, string criterio, string filtro, string codigo)
         {
             List<Articulo> lista = new List<Articulo>();
-            AccesoDatos datos = new AccesoDatos ();
+            AccesoDatos datos = new AccesoDatos();
             Console.WriteLine("Dentro de metodo filtrar");
-            try 
+            try
             {
                 string consulta = "select A.Id, Codigo, Nombre, A.Descripcion, M.Descripcion DescMarca, C.Descripcion DescCategoria, ImagenUrl, A.IdMarca, A.IdCategoria, Precio from ARTICULOS A, MARCAS M, CATEGORIAS C where A.IdMarca = M.Id and  A.IdCategoria = C.Id and Nombre is not null and Codigo IS NOT NULL and Codigo NOT LIKE '#%' AND ";
 
-                if(columna == "Nombre" || columna == "Codigo" || columna == "Marca" || columna == "Categoria" || columna == "Descripcion")
+                if (columna == "Nombre" || columna == "Codigo" || columna == "Marca" || columna == "Categoria" || columna == "Descripcion")
                 {
-                    if(columna == "Marca")
+                    if (columna == "Marca")
                     {
                         columna = "M.Descripcion";
                     }
-                    else if(columna == "Categoria")
+                    else if (columna == "Categoria")
                     {
                         columna = "C.Descripcion";
                     }
@@ -222,7 +353,7 @@ namespace Negocio
                     else
                         consulta += columna + " like '%" + filtro + "%'";
 
-                    Console.WriteLine (consulta);
+                    Console.WriteLine(consulta);
                 }
                 else if (columna == "Precio")
                 {
@@ -234,8 +365,8 @@ namespace Negocio
                         consulta += "Precio = " + filtro;
                 }
 
-                Console.WriteLine ("SQL " + consulta);
-                datos.setearConsulta (consulta);
+                Console.WriteLine("SQL " + consulta);
+                datos.setearConsulta(consulta);
                 datos.ejecutarLectura();
 
                 while (datos.Lector.Read())

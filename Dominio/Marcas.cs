@@ -14,7 +14,7 @@ namespace Dominio
         //Sobrescribe el metodo ToString para que devuelva el valor de descripcion en vez del namespace
         public override string ToString()
         {
-            return Descripcion;
+            return Descripcion.ToString();
         }
     }
 }

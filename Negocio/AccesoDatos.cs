@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data.SqlClient;
 
 namespace Negocio
 {
-    internal class AccesoDatos
+    public class AccesoDatos
     {
         private SqlConnection conexion;
         private SqlCommand comando;
@@ -21,7 +23,7 @@ namespace Negocio
 
         public AccesoDatos()
         {
-            conexion = new SqlConnection("server=localhost; database=CATALOGO_DB; integrated security=true");
+            conexion = new SqlConnection(ConfigurationManager.AppSettings["cadenaConexion"]);
             comando = new SqlCommand();
         }
 
@@ -30,6 +32,12 @@ namespace Negocio
         {
             comando.CommandType = System.Data.CommandType.Text;
             comando.CommandText = consulta;
+        }
+
+        public void setearProcedimiento(string sp)
+        {
+            comando.CommandType = System.Data.CommandType.StoredProcedure;
+            comando.CommandText = sp;
         }
 
         public void ejecutarLectura()
@@ -63,6 +71,27 @@ namespace Negocio
                 cerrarConexion();
             }
         }
+
+        public int ejecutarAccionScalar()
+        {
+            comando.Connection = conexion;
+            try
+            {
+                conexion.Open();
+                object resultado = comando.ExecuteScalar();
+                return resultado != null ? Convert.ToInt32(resultado) : 0;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (conexion.State == ConnectionState.Open)
+                    conexion.Close();
+            }
+        }
+
 
         public void setearParametro(string nombre, object valor)
         {
