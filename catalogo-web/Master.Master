@@ -5,17 +5,15 @@
 <head runat="server">
     <title>Catálogo Web</title>
 
-    <!-- Bootstrap CSS desde NuGet -->
     <<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-    <!-- Tu CSS personalizado -->
     <link href="Content/estilos-catalogo.css" rel="stylesheet" />
 
     <asp:ContentPlaceHolder ID="head" runat="server" />
 </head>
 <body>
-    !-- Navbar principal -->
+    <!-- Navbar principal -->
     <nav class="navbar bg-body-tertiary fixed-top">
         <div class="container-fluid d-flex align-items-center justify-content-between">
 
@@ -33,12 +31,15 @@
                 <i class="fa-solid fa-moon fa-2x" role="button"></i>
 
                 <!-- Usuario / Login -->
-                <% if (UsuarioLogeado) { %>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-                        <i class="fa-solid fa-user-circle fa-2x"></i>
-                    </button>
-                <% } else { %>
-                    <a class="navbar-brand" href="Login.aspx">Login</a>
+                <% if (UsuarioLogeado)
+                    { %>
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                    <i class="fa-solid fa-user-circle fa-2x"></i>
+                </button>
+                <% }
+                else
+                { %>
+                <a class="navbar-brand" href="Login.aspx">Login</a>
                 <% } %>
             </div>
         </div>
@@ -78,6 +79,8 @@
 
     <!-- Contenido principal -->
     <form id="form1" runat="server">
+        <asp:HiddenField ID="hfTheme" runat="server" />
+
         <div class="container py-5 mt-5">
             <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server" />
         </div>
@@ -85,34 +88,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Lógica de tema -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const temaActual = document.documentElement.getAttribute("data-bs-theme");
-            const iconoSol = document.querySelector(".fa-sun");
-            const iconoLuna = document.querySelector(".fa-moon");
-
-            if (temaActual === "dark") {
-                iconoSol.style.display = "inline-block";
-                iconoLuna.style.display = "none";
-            } else {
-                iconoSol.style.display = "none";
-                iconoLuna.style.display = "inline-block";
-            }
-
-            iconoSol.addEventListener("click", () => {
-                document.documentElement.setAttribute("data-bs-theme", "light");
-                iconoSol.style.display = "none";
-                iconoLuna.style.display = "inline-block";
-            });
-
-            iconoLuna.addEventListener("click", () => {
-                document.documentElement.setAttribute("data-bs-theme", "dark");
-                iconoSol.style.display = "inline-block";
-                iconoLuna.style.display = "none";
-            });
-        });
-    </script>
+    <%-- Temas --%>
+    <script src="Content/Acciones.js"></script>
 </body>
 </html>

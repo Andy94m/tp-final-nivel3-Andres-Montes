@@ -16,3 +16,17 @@ select * from USERS
 --Visualizar constraint en la tabla:
 --SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
 --WHERE TABLE_NAME = 'FAVORITOS'
+
+
+--Creación de procedimiento almacenado para validar usuario
+--CREATE PROCEDURE spValidarUsuario
+--@Email varchar(50),
+--@Password varchar(100)
+--as
+--begin
+--	SELECT id, email, pass, nombre, apellido, UrlImagenPerfil, admin
+--	FROM USERS 
+--	WHERE email = @Email AND pass = @Password
+--END
+--GO
+
