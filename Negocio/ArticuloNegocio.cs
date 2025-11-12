@@ -82,7 +82,7 @@ namespace Negocio
             List<Articulo> lista = new List<Articulo>();
             AccesoDatos datos = new AccesoDatos();
 
-            if(datos != null)
+            if (datos != null)
                 Debug.WriteLine("AccesoDatos no es nulo");
             else
                 Debug.WriteLine("AccesoDatos es nulo");
@@ -101,6 +101,7 @@ namespace Negocio
                     aux.Descripcion = (string)datos.Lector["Descripcion"];
                     aux.UrlImagen = (string)datos.Lector["ImagenUrl"];
                     aux.Precio = (decimal)datos.Lector["Precio"];
+
 
                     //Debug.WriteLine(aux.Cod.ToString());
 
@@ -270,11 +271,12 @@ namespace Negocio
             AccesoDatos datos = new AccesoDatos();
             try
             {
-                datos.setearProcedimiento("storedModificarArticulo");
+                datos.setearProcedimiento("storedModificar");
                 datos.setearParametro("@Id", artic.Id);
                 datos.setearParametro("@Codigo", artic.Cod);
                 datos.setearParametro("@Nombre", artic.Nombre);
                 datos.setearParametro("@Descripcion", artic.Descripcion);
+                Debug.WriteLine("IdMarca en modificarConSP: " + artic.Compania.Id);
                 datos.setearParametro("@IdMarca", artic.Compania.Id);
                 datos.setearParametro("@IdCategoria", artic.Tipo.Id);
                 datos.setearParametro("@ImagenUrl", artic.UrlImagen);
@@ -393,5 +395,27 @@ namespace Negocio
             }
         }
 
+        public Articulo buscarId(int id)
+        {
+            AccesoDatos datos = new AccesoDatos();
+            try
+            {
+                datos.setearConsulta("select A.Id, Codigo, Nombre, A.Descripcion, M.Descripcion DescMarca, C.Descripcion DescCategoria, ImagenUrl, A.IdMarca, A.IdCategoria, Precio from ARTICULOS A, MARCAS M, CATEGORIAS C where A.IdMarca = M.Id and  A.IdCategoria= C.ID and Nombre is not null and Codigo NOT LIKE '#%' and A.Id = @Id");
+                datos.setearParametro("@Id", id);
+                datos.ejecutarLectura();
+                if (datos.Lector.Read())
+                {
+                    return auxFila(datos.Lector);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
