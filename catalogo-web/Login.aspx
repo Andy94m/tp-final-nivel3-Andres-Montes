@@ -38,7 +38,7 @@
                 </div>
                 <div class="d-flex justify-content-center gap-2 mt-3">
                     <asp:Button Text="Ingresar" CssClass="btn btn-outline-success" ID="btnLogin" OnClick="btnLogin_Click" runat="server" />
-                    
+
                     <a class="btn btn-outline-danger" href="/">Volver</a>
                 </div>
 
@@ -49,6 +49,7 @@
 
             <!-- Columna Registro -->
             <div class="col-md-5 ps-md-4">
+
                 <h2>Registro</h2>
                 <hr />
                 <div class="mb-3">
@@ -71,8 +72,11 @@
                     <label class="form-label">Confirmar password:</label>
                     <asp:TextBox runat="server" CssClass="form-control" ID="TextBox1" TextMode="Password" />
                 </div>
-                <asp:Button Text="Registrarse" CssClass="btn btn-outline-primary me-2" ID="btnRegistro" runat="server" />
+                <asp:Button Text="Registrarse" CssClass="btn btn-outline-primary me-2" ID="btnRegistro" OnClick="btnRegistro_Click" runat="server" />
                 <a class="btn btn-outline-secondary" href="/">Cancelar</a>
+
+                <asp:Literal ID="litAlertaLogin" runat="server" />
+                <asp:Literal ID="Literal1" runat="server" />
             </div>
         </div>
     </div>

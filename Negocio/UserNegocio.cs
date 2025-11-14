@@ -21,7 +21,7 @@ namespace Negocio
             
             try
             {
-                datos.setearProcedimiento("insertarNuevo");
+                datos.setearProcedimiento("spAgregarUsuario");
                 datos.setearParametro("@Nombre", nuevo.Nombre);
                 datos.setearParametro("@Apellido", nuevo.Apellido);
                 datos.setearParametro("@Email", nuevo.Email);
